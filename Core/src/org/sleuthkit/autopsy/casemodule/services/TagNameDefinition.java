@@ -178,6 +178,17 @@ final public class TagNameDefinition implements Comparable<TagNameDefinition> {
     public TskData.TagType getTagType() {
         return tagType;
     }
+    
+    /**
+     * The status which will be applied to items with this tag.
+     *
+     * @return a value of TskData.FileKnown which is associated with this tag
+     * @deprecated getTagType() should be used instead.
+     */
+    @Deprecated
+    public TskData.FileKnown getKnownStatus() {
+        return TskData.TagType.convertTagTypeToFileKnown(tagType);
+    }
 
     /**
      * Compares this tag name definition with the specified tag name definition
