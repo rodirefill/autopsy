@@ -545,6 +545,22 @@ public class TagsManager implements Closeable {
     public TagName addTagName(String displayName, String description, TagName.HTML_COLOR color) throws TagNameAlreadyExistsException, TskCoreException {
         return addTagName(displayName, description, color, TskData.TagType.SUSPICIOUS);
     }
+    
+    /**
+     * 
+     * @param displayName
+     * @param description
+     * @param color
+     * @param knownStatus
+     * @return
+     * @throws org.sleuthkit.autopsy.casemodule.services.TagsManager.TagNameAlreadyExistsException
+     * @throws TskCoreException
+     * @deprecated addTagName(String displayName, String description, TagName.HTML_COLOR color, TskData.TagType tagType) should be used instead
+     */
+    @Deprecated
+    public TagName addTagName(String displayName, String description, TagName.HTML_COLOR color, TskData.FileKnown knownStatus) throws TagNameAlreadyExistsException, TskCoreException {
+        return addTagName(displayName, description, color, TskData.TagType.convertFileKnownToTagType(knownStatus));
+    }
 
     /**
      * Adds a tag name entry to the case database and adds a corresponding tag
