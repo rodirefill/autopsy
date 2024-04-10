@@ -482,10 +482,11 @@ public final class CaseEventListener implements PropertyChangeListener {
                 for (BlackboardArtifactTag bbTag : artifactTags) {
                     //start with assumption that none of the other tags applied to this Correlation Attribute will prevent it's status from being changed
                     boolean hasTagWithConflictingKnownStatus = false;
-                    // if the status of the tag has been changed to TskData.TagType.UNKNOWN
+                    // if the status of the tag has been changed to TskData.TagType.UNKNOWN or TskData.TagType.SUSPICIOUS
                     // we need to check the status of all other tags on this correlation attribute before changing
                     // the status of the correlation attribute in the central repository
-                    if (tagName.getTagType() == TskData.TagType.UNKNOWN) {
+                    if (tagName.getTagType() == TskData.TagType.UNKNOWN
+                            || tagName.getTagType() == TskData.TagType.SUSPICIOUS) {
                         Content content = bbTag.getContent();
                         // If the content which this Blackboard Artifact Tag is linked to is an AbstractFile with KNOWN status then 
                         // it's status in the central reporsitory should not be changed to UNKNOWN
@@ -522,10 +523,11 @@ public final class CaseEventListener implements PropertyChangeListener {
                 for (ContentTag contentTag : fileTags) {
                     //start with assumption that none of the other tags applied to this ContentTag will prevent it's status from being changed
                     boolean hasTagWithConflictingKnownStatus = false;
-                    // if the status of the tag has been changed to TskData.TagType.UNKNOWN
+                    // if the status of the tag has been changed to TskData.TagType.UNKNOWN or TskData.TagType.SUSPICIOUS
                     // we need to check the status of all other tags on this file before changing
                     // the status of the file in the central repository
-                    if (tagName.getTagType() == TskData.TagType.UNKNOWN) {
+                    if (tagName.getTagType() == TskData.TagType.UNKNOWN
+                            || tagName.getTagType() == TskData.TagType.SUSPICIOUS) {
                         Content content = contentTag.getContent();
                         TagsManager tagsManager = Case.getCurrentCaseThrows().getServices().getTagsManager();
                         List<ContentTag> tags = tagsManager.getContentTagsByContent(content);

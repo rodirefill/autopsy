@@ -1,7 +1,7 @@
 /*
  * Autopsy Forensic Browser
  *
- * Copyright 2011-2018 Basis Technology Corp.
+ * Copyright 2011-2024 Basis Technology Corp.
  * Contact: carrier <at> sleuthkit <dot> org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,7 +54,7 @@ final public class TagNameDefinition implements Comparable<TagNameDefinition> {
     private static final String TAGS_SETTINGS_NAME = "Tags"; //NON-NLS
     private static final String TAG_NAMES_SETTING_KEY = "TagNames"; //NON-NLS 
     private static final String TAG_SETTING_VERSION_KEY = "CustomTagNameVersion";
-    private static final int TAG_SETTINGS_VERSION = 1;
+    private static final int TAG_SETTINGS_VERSION = 2; // Changed tag type from TskData.FileKnown to TskData.TagType
 
     private final String displayName;
     private final String description;
@@ -85,13 +85,15 @@ final public class TagNameDefinition implements Comparable<TagNameDefinition> {
      * @param description The description for the tag name.
      * @param color       The color for the tag name.
      * @param status      The status denoted by the tag name.
+     * @deprecated TagNameDefinition(String displayName, String description, TagName.HTML_COLOR color, TskData.TagType status) should be used instead.
      */
-    /* ELTODO public TagNameDefinition(String displayName, String description, TagName.HTML_COLOR color, TskData.FileKnown status) {
+    @Deprecated
+    public TagNameDefinition(String displayName, String description, TagName.HTML_COLOR color, TskData.FileKnown status) {
         this.displayName = displayName;
         this.description = description;
         this.color = color;
-        this.tagType = status;
-    }*/
+        this.tagType = TskData.TagType.convertFileKnownToTagType(status);
+    }
     
     public TagNameDefinition(String displayName, String description, TagName.HTML_COLOR color, TskData.TagType status) {
         this.displayName = displayName;
@@ -323,7 +325,7 @@ final public class TagNameDefinition implements Comparable<TagNameDefinition> {
         Integer version = getPropertyFileVersion();
         List<TagNameDefinition> definitions = new ArrayList<>();
 
-        if (version == null) {
+        if (version == null || version == 1) {
             String tagsProperty = ModuleSettings.getConfigSetting(TAGS_SETTINGS_NAME, TAG_NAMES_SETTING_KEY);
             if (tagsProperty == null || tagsProperty.isEmpty()) {
                 ModuleSettings.setConfigSetting(TAGS_SETTINGS_NAME, TAG_SETTING_VERSION_KEY, Integer.toString(TAG_SETTINGS_VERSION));
@@ -339,22 +341,27 @@ final public class TagNameDefinition implements Comparable<TagNameDefinition> {
             List<String> notableTagList = null;
             for (String tagProps : individualTags) {
                 String[] attributes = tagProps.split(",");
-                TskData.TagType fileKnown = TskData.TagType.SUSPICIOUS;
+                TskData.TagType tagType = TskData.TagType.SUSPICIOUS;
                 if (attributes.length == 3) {
                     // If notableTagList is null load it from the CR.
                     if (notableTagList == null) {
-                        notableTagList = getCRNotableList(); // ELTODO handle backwards compatibility
+                        notableTagList = getCRNotableList();
                     } else {
                         if (notableTagList.contains(attributes[0])) {
-                            fileKnown = TskData.TagType.BAD;
+                            tagType = TskData.TagType.BAD;
                         }
                     }
                 } else {
-                    fileKnown = TskData.TagType.valueOf(attributes[3]);
+                    if (version == 1) {
+                        // handle backwards compatibility
+                        tagType = TskData.TagType.convertFileKnownToTagType(TskData.FileKnown.valueOf(attributes[3]));
+                    } else {
+                        tagType = TskData.TagType.valueOf(attributes[3]);
+                    }
                 }
 
                 definitions.add(new TagNameDefinition(attributes[0], attributes[1],
-                        TagName.HTML_COLOR.valueOf(attributes[2]), fileKnown));
+                        TagName.HTML_COLOR.valueOf(attributes[2]), tagType));
             }
         }
 
